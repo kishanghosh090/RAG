@@ -9,7 +9,7 @@ client = OpenAI(
 )
 
 res = client.chat.completions.create(
-    model="gemini-2.5-flash",
+    model="gemini-3.1-flash-lite",
     messages=[
         {'role': "user", 'content': "hey there"},
          {'role': "user", 'content': "i am kishan"}
