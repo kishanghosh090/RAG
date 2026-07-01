@@ -1,5 +1,6 @@
 from openai import OpenAI
 from dotenv import load_dotenv
+import json
 load_dotenv()
 
 client = OpenAI(
@@ -37,9 +38,19 @@ SYSTEM_PROMPT = """
 
 res = client.chat.completions.create(
     model="gemini-3.1-flash-lite",
+    response_format={
+        "type":"json_object"
+    },
     messages=[
         {'role': "user", 'content': SYSTEM_PROMPT},
-         {'role': "user", 'content': "tell me a joke"}
+         {'role': "user", 'content': "tell me a joke"},
+         {'role': "assistant", "content": json.dumps(
+             
+            {
+            "step": "PLAN",
+            "content": "Identify an appropriate, lighthearted joke to share with the user."
+            }
+         )}
     ]
 )
 
