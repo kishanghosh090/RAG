@@ -8,6 +8,8 @@ client = OpenAI(
 
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
+
+
 def get_weather(city):
     url = f"https://wttr.in/{city.lower()}?format=%C+%t"
     res = requests.get(url)
@@ -15,7 +17,9 @@ def get_weather(city):
         return f"The weather in {city} is {res.text}"
     return f"something went wonrg"
 
-
+available_tool = {
+    "get_weather": get_weather
+}
 
 def main():
     user_query = input("> ")
