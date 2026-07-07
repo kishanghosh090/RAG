@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant_db
+    restart: unless-stopped
+    ports:
+      - "6333:6333" # REST API & Web UI
+      # - "6334:6334" # gRPC API
+    # environment:
+      # Secures your vector database with an API Key
+      # - QDRANT__SERVICE__API_KEY=your_secret_api_key_here
+    # volumes:
+      # - qdrant_data:/qdrant/storage
+
+# volumes:
+  # qdrant_data:
