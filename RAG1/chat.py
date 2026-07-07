@@ -30,28 +30,26 @@ search_result = vector_db.similarity_search(query=user_query)
 
 context = "\n\n\n".join([f"page content {result.page_content}\n Page Number : {result.metadata['page']}\nFile Location {result.metadata["source"]}" for result in search_result])
 
-# print(context)
+print(context)
 SYSTEM_PROMPT = f"""
     you are a helpful AI assistant who answer user query based on available contxt retrived from a PDF file page_contents and page numbers.
 
     you should only anser the user based on the following context and navigate the user to open the right page number to know more.
 
     context:
-        {context}
+        
 
 """
 
-client = OpenAI(
-    api_key= os.getenv("GEMINI_API_KEY"),
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-)
+client = OpenAI()
 
 res = client.chat.completions.create(
-    model="gemini-3.1-flash-lite",
+    model="gpt-5.4-mini",
     messages=[
         {'role': "system", 'content': SYSTEM_PROMPT},
-        {'role': "user", "content": user_query}
-    ]
+        {'role': "user", "content": "user_query"}
+    ],
+    
 )
 
 print(res.choices[0].message.content)
