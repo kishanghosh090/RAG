@@ -59,4 +59,4 @@ vector_store = QdrantVectorStore.from_documents(
 
 )
 
-print("✅ Document indexed successfully!")
+# print("✅ Document indexed successfully!")
