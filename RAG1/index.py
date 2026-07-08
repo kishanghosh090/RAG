@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-# from langchain_openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from langchain_qdrant import QdrantVectorStore
@@ -27,7 +27,7 @@ print(f"Loaded {len(documents)} pages")
 
 
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=800,
+    chunk_size=1000,
     chunk_overlap=100,
 )
 
@@ -38,25 +38,21 @@ print(f"Created {len(chunks)} chunks")
 
 # Gemini Embedding 
 
-# embeddings = OpenAIEmbeddings(
-#     model="gemini-embedding-001",
-#     api_key=os.getenv("GEMINI_API_KEY"),
-#     base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-# )
 
-embeddings = GoogleGenerativeAIEmbeddings(
+# embedding_model = OpenAIEmbeddings(
+#     model="text-embedding-3-large",
+# )
+embedding_model = GoogleGenerativeAIEmbeddings(
     model="gemini-embedding-2",
-    google_api_key=os.getenv("GEMINI_API_KEY"),
+    google_api_key=os.getenv("OPENAI_API_KEY"),
 )
 # Store in Qdrant
 
 vector_store = QdrantVectorStore.from_documents(
     documents=chunks,
-    embedding=embeddings,
+    embedding=embedding_model,
     url=os.getenv("QDRANT_URL"),
     collection_name="learning_rag",
-    batch_size=50,
-
 )
 
-# print("✅ Document indexed successfully!")
+print("✅ Document indexed successfully!")
