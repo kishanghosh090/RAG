@@ -1,0 +1,54 @@
+from openai import OpenAI
+import os
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_qdrant import QdrantVectorStore
+from langchain_openai import OpenAIEmbeddings
+from dotenv import load_dotenv
+
+load_dotenv()
+
+client = OpenAI()
+
+# embedding_model = OpenAIEmbeddings(
+#     model="text-embedding-3-large",
+# )
+embedding_model = GoogleGenerativeAIEmbeddings(
+    model="gemini-embedding-2",
+    google_api_key=os.getenv("OPENAI_API_KEY"),
+)
+
+vector_db = QdrantVectorStore.from_existing_collection(
+        url=os.getenv("QDRANT_URL"),
+        embedding=embedding_model,
+        collection_name="learning_rag",
+)
+
+def process_query(query: str):
+    print(f"Processing query: {query}")
+    search_result = vector_db.similarity_search(query=query)
+    context = "\n\n\n".join([f"page content {result.page_content}\n Page Number : {result.metadata['page']}\nFile Location {result.metadata["source"]}" for result in search_result])
+
+    SYSTEM_PROMPT = f"""
+    you are a helpful AI assistant who answer user query based on available contxt retrived from a PDF file page_contents and page numbers.
+
+    you should only anser the user based on the following context and navigate the user to open the right page number to know more.
+
+    context:
+        
+    {context}
+    """
+    res = client.chat.completions.create(
+    model="gpt-5.4-mini",
+    messages=[
+        {'role': "system", 'content': SYSTEM_PROMPT},
+        {'role': "user", "content": "user_query"}
+    ],
+    
+    )
+
+    print(res.choices[0].message.content)
+    return res.choices[0].message.content
+
+
+
+
