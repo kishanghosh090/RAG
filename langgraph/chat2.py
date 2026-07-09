@@ -22,7 +22,7 @@ def chatbot(state: State):
    return state
 
 def evaluate_response(state: State) -> Literal["chatbot_gemini_lite", "endnode"]:
-    if True:
+    if False:
         return "endnode"
     
     return "chatbot_gemini_lite"
