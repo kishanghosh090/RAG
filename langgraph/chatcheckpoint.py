@@ -50,12 +50,13 @@ config = {
 }
 
 # First run: State initialization
-updated_state = graph_with_check_point.invoke(
-    {"messages": [{"role": "user", "content": "what is my name?"}]}, 
-    config
-)
-print("--- FIRST RESPONSE ---")
-print(updated_state["messages"][-1].content)
+for chunk in graph_with_check_point.stream(
+    {"messages": [{"role": "user", "content": "what am i learning"}]}, 
+    config,
+    stream_mode="values"
+):
+    print(chunk["messages"][-1].pretty_print())
 
 
-# 
+
+
