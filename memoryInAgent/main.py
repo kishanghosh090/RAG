@@ -39,25 +39,32 @@ mem_client = Memory.from_config(config)
 
 user_query = input("Enter your query: ")
 
-search_results = mem_client.search(query=user_query, user_id="kishan")
+# Change this:
+# search_results = mem_client.search(query=user_query, user_id="kishan")
+
+# To this:
+search_results = mem_client.search(query=user_query, filters={"user_id": "kishan"})
+
 memory_about_user = search_results
 
 memories = [
-    f"ID {mem.get("id")}\nMemory: {mem.get("memory")}" for mem in memory_about_user
+    f"ID {mem.get("id")}\nMemory: {mem.get("memory")}" for mem in memory_about_user.get("results", [])
 ]
 SYSTEM_PROMPT = f"""
 You are a helpful assistant that uses the following memories to answer the user's query.
 Memories:
 {json.dumps(memories, indent=2)}
 """
-
+print("SYSTEM_PROMPT:", SYSTEM_PROMPT)
 res = client.chat.completions.create(
     model="gemini-3.1-flash-lite",
     messages=[
         {
-            "role": "system", "content": SYSTEM_PROMPT,
-        
-            "role": "user", "content": user_query}
+            "role": "system", "content": SYSTEM_PROMPT
+        },
+        {
+            "role": "user", "content": user_query
+        }
     ],
 )
 ai_response = res.choices[0].message.content
