@@ -1,56 +1,146 @@
-import speech_recognition as sr
 import asyncio
 import os
+import tempfile
+
+import sounddevice as sd
+import soundfile as sf
+import speech_recognition as sr
 from dotenv import load_dotenv
-from openai import OpenAI, AsyncOpenAI
-from openai.helpers import LocalAudioPlayer
+from gtts import gTTS
+from openai import OpenAI
 
-load_dotenv()  
+load_dotenv()
 
-API_KEY = os.environ.get("GOOGLE_API_KEY") or ""
-client = OpenAI(api_key=API_KEY, base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
-async_client = AsyncOpenAI(api_key=API_KEY, base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
+API_KEY = os.getenv("GOOGLE_API_KEY")
 
-async def tts(text: str):
-    async with async_client.audio.with_streaming_response.create(
-        model="gemini-3.5-flash",
-        voice="alloy",
-        input=text,
-        response_format="pcm"
-    ) as response:
-        async with LocalAudioPlayer(response) as player:
-            await player.play()
-            await response.stream_to(player)
+client = OpenAI(
+    api_key=API_KEY,
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+)
 
-async def main():
-    r = sr.Recognizer()
+SYSTEM_PROMPT = """
+You are a helpful voice assistant.
+
+Respond naturally.
+Keep answers concise (1-3 sentences).
+Avoid markdown.
+Avoid emojis.
+"""
+
+
+def speak(text: str):
+    """Generate speech using gTTS and play it."""
+
+    temp_file = None
+
+    try:
+        tts = gTTS(text=text, lang="en")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
+            temp_file = f.name
+
+        tts.save(temp_file)
+
+        data, samplerate = sf.read(temp_file, dtype="float32")
+
+        print("----- Audio Info -----")
+        print("Shape:", data.shape)
+        print("Sample Rate:", samplerate)
+        print("dtype:", data.dtype)
+        print("----------------------")
+
+        print(sd.query_devices(sd.default.device[1], "output"))
+
+        sd.play(data, samplerate)
+        sd.wait()
+
+    except Exception as e:
+        print("TTS Error:", e)
+
+    finally:
+        if temp_file and os.path.exists(temp_file):
+            os.remove(temp_file)
+
+
+def listen():
+    recognizer = sr.Recognizer()
+
     with sr.Microphone() as source:
-        r.adjust_for_ambient_noise(source)
-        r.pause_threshold = 2
-        print("Please say something...")
-        audio = r.listen(source)
 
-        print("Processing Audio...")
+        recognizer.adjust_for_ambient_noise(source, duration=0.5)
+        recognizer.pause_threshold = 0.8
 
-        stt = r.recognize_houndify(audio)
+        print("\n🎤 Speak...")
 
-        print("You said: " + stt)
+        try:
+            audio = recognizer.listen(
+                source,
+                timeout=5,
+                phrase_time_limit=10,
+            )
+        except sr.WaitTimeoutError:
+            print("No speech detected.")
+            return None
 
-        SYSTEM_PROMPT = """You are a helpful assistant. you are a voice agent that can answer questions and provide information based on the user's input. Please respond in a clear and concise manner.
-        you need to output as if you are a voice agent, and you need to provide information based on the user's input. You should not ask the user for more information, and you should not provide any personal opinions or advice. You should only provide factual information based on the user's input.
-        """
+    print("Recognizing...")
 
-        client_res = client.chat.completions.create(
-            model="gemini-3.1-flash-lite",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": stt}
-            ]
-        )
+    try:
+        text = recognizer.recognize_google(audio)
+        print("You:", text)
+        return text
 
-        print("Assistant: " + client_res.choices[0].message.content)
-        asyncio.run(tts(client_res.choices[0].message.content))
+    except sr.UnknownValueError:
+        print("Couldn't understand.")
+        return None
+
+    except sr.RequestError as e:
+        print(e)
+        return None
+
+
+def ask_gemini(prompt: str):
+
+    response = client.chat.completions.create(
+model="gemini-2.5-flash",        messages=[
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT,
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+    )
+
+    return response.choices[0].message.content.strip()
+
+
+def main():
+
+    while True:
+
+        text = listen()
+
+        if not text:
+            continue
+
+        if text.lower() in {
+            "exit",
+            "quit",
+            "stop",
+            "bye",
+        }:
+            print("Goodbye!")
+            speak("Goodbye.")
+            break
+
+        reply = ask_gemini(text)
+
+        print("\nAssistant:", reply)
+
+        speak(reply)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
