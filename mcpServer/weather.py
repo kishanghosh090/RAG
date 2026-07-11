@@ -6,6 +6,8 @@ mcp = FastMCP("weather")
 async def get_weather(location: str)->str:
     """Get the weather location
     """
+
+    print("run weather fun")
     return "It's alway raining in california"
 
 
