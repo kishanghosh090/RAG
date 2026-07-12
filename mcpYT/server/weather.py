@@ -70,3 +70,9 @@ def get_config() -> dict[str, Any]:
         "version": "1.0",
         "description": "A simple weather app that fetches alerts from the NWS API."
     }
+
+@mcp.resource("config://{message}")
+def get_config2(message:str) -> str:
+    """Get the configuration for the weather app
+    """
+    return f"Weather App Configuration: {message}"
