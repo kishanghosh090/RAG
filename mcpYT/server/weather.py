@@ -61,4 +61,12 @@ async def get_alerts(state: str)-> str:
     return "\n\n".join(formatted_alerts)
 
 
-
+@mcp.resource("config://app")
+def get_config() -> dict[str, Any]:
+    """Get the configuration for the weather app
+    """
+    return {
+        "name": "Weather App",
+        "version": "1.0",
+        "description": "A simple weather app that fetches alerts from the NWS API."
+    }
