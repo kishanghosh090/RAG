@@ -8,10 +8,9 @@ const server = new McpServer({
 });
 
 async function getWeatherByCity(city: string) {
-
   city = city.toLowerCase();
   const response = await fetch(
-    `https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${city}`,
+    `https://wttr.in/${city}?format=j1`,
   );
   if (!response.ok) {
     throw new Error(
@@ -25,7 +24,7 @@ server.registerTool(
   "get_weather",
   {
     description:
-      "Fetch live regional forecasts from the US National Weather Service.",
+      "Fetch current weather conditions for any city worldwide.",
     inputSchema: {
       city: z.string(),
     },
