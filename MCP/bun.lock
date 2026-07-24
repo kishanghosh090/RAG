@@ -2,6 +2,7 @@
   "lockfileVersion": 1,
   "configVersion": 1,
   "workspaces": {
+    
     "": {
       "name": "mcp",
       "dependencies": {
