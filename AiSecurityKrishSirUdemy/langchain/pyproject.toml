@@ -4,4 +4,17 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "google-genai>=2.14.0",
+    "langchain-google-genai>=4.3.1",
+    "langchain-google-vertexai>=3.2.4",
+    "langchain-openai>=1.4.1",
+]
+
+[dependency-groups]
+dev = [
+    "langchain",
+]
+
+[tool.uv.sources]
+langchain = { workspace = true }
