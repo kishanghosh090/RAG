@@ -1,0 +1,21 @@
+[project]
+name = "lang-graph-krish"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "kishanghosh090", email = "kishanghosh090@gmail.com" }
+]
+requires-python = ">=3.9"
+dependencies = [
+    "langchain>=0.3.30",
+    "langgraph>=0.6.11",
+    "langsmith>=0.4.37",
+]
+
+[project.scripts]
+lang-graph-krish = "lang_graph_krish:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
